@@ -32,7 +32,7 @@ class DictWrapper(object):
         return str(self.data)
 
     def _asdict(self):
-        return self.data
+        return dict(self.data)
 
     def __iter__(self):
         return iter([dict(self.data)])
