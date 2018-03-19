@@ -31,8 +31,8 @@ class DictWrapper(object):
     def __str__(self):
         return str(self.data)
 
-    def toJSON(self):
-        return self.data.toJSON()
+    def _asdict(self):
+        return self.data
 
 class CursorWrapper(object):
 
