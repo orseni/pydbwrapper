@@ -35,7 +35,7 @@ class DictWrapper(object):
         return self.data
 
     def __iter__(self):
-        return iter([self.data.dict])
+        return iter([dict(self.data)])
 
 
 class CursorWrapper(object):
