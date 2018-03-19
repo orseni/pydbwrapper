@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-import pg_simple
+import database
 
 try:
     with open(os.path.abspath('./README.md')) as stream:
@@ -11,8 +11,8 @@ except:
     long_description = 'pydbwrapper is a simple wrapper for Python psycopg2 with connection pooling'
 
 setup(
-    name=pg_simple.__name__,
-    version=pg_simple.VERSION,
+    name=database.__name__,
+    version=database.VERSION,
     packages=find_packages(),
     install_requires=['psycopg2'],
     classifiers=['Topic :: Database',

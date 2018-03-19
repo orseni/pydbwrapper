@@ -5,6 +5,8 @@ import psycopg2.extras
 
 from config import Config
 
+VERSION = "1.0.0"
+
 QUERIES_DIR = os.path.dirname(os.path.realpath(__file__)) + '/sql/'
 
 class DictWrapper(object):
