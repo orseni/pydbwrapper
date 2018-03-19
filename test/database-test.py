@@ -1,9 +1,8 @@
 import inspect
-from database import Database
-
+from pydbwrapper import database
 
 def test_database():
-    with Database() as db:
+    with database.Database() as db:
         find_all_users(db)
         find_user_by_id(db)
         update_user(db)
