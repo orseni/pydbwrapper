@@ -112,7 +112,6 @@ class Database(object):
         self.connection.close()
 
     def __load_query(self, name):
-        print(QUERIES_DIR)
         """Load a query located in ./sql/<name>.sql"""
         with open(QUERIES_DIR + name + '.sql') as query:
             query_string = query.read()
