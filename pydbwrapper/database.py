@@ -11,8 +11,7 @@ VERSION = "1.0.1"
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
 global pool
-pool = psycopg2.pool.SimpleConnectionPool(50, 50, **self.config.data)
-
+pool = None
 
 class DictWrapper(object):
     """Dict wrapper to access dict attributes with . operator"""
@@ -116,6 +115,9 @@ class Database(object):
     def __init__(self):
         self.config = Config.instance()
         #self.connection = psycopg2.connect(**self.config.data)
+        if pool == None:
+            pool = psycopg2.pool.SimpleConnectionPool(50, 50, **self.config.data)
+
         self.connection = pool.getconn()
 
     def __enter__(self):
