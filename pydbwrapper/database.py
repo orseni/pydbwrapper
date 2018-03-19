@@ -3,7 +3,7 @@ import os
 import psycopg2
 import psycopg2.extras
 
-from config import Config
+from pydbwrapper.config import Config
 
 VERSION = "1.0.1"
 
