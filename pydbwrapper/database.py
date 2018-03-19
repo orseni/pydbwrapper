@@ -119,7 +119,8 @@ class Database(object):
         return self
 
     def __exit__(self, type, value, tb):
-        self.connection.close()
+        self.config.pool.putconn(self.connection)
+        # self.connection.close()
 
     def __load_query(self, name):
         """Load a query located in ./sql/<name>.sql"""
@@ -143,4 +144,5 @@ class Database(object):
 
     def disconnect(self):
         """Disconnect from database"""
-        self.connection.close()
+        self.config.pool.putconn(self.connection)
+        # self.connection.close()
