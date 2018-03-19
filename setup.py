@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-import database
+from pydbwrapper import database
 
 try:
     with open(os.path.abspath('./README.md')) as stream:
