@@ -5,7 +5,7 @@ import psycopg2.extras
 
 from config import Config
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 QUERIES_DIR = os.path.dirname(os.path.realpath(__file__)) + '/sql/'
 
