@@ -11,7 +11,7 @@ except:
     long_description = 'pydbwrapper is a simple wrapper for Python psycopg2 with connection pooling'
 
 setup(
-    name=database.__name__,
+    name="pydbwrapper",
     version=database.VERSION,
     packages=find_packages(),
     install_requires=['psycopg2'],
