@@ -34,6 +34,10 @@ class DictWrapper(object):
     def _asdict(self):
         return self.data
 
+    def __iter__(self):
+        return self.data.__iter__
+
+
 class CursorWrapper(object):
 
     def __init__(self, cursor):
