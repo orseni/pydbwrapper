@@ -32,10 +32,10 @@ class DictWrapper(object):
         return str(self.data)
 
     def _asdict(self):
-        return dict(self.data)
+        return self.data
 
     def __iter__(self):
-        return iter([dict(self.data)])
+        return iter(self.data)
 
 
 class CursorWrapper(object):
