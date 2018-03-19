@@ -28,7 +28,7 @@ class Config(object):
                     raise InvalidConfigurationError(ex)
         elif config_dict:
             self.data = config_dict
-        self.pool = psycopg2.pool.SimpleConnectionPool(50, 50, **self.data)
+        self.pool = psycopg2.pool.SimpleConnectionPool(100, 300, **self.data)
 
     def getconn(self):
         return self.pool.getconn()
