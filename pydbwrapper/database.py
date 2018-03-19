@@ -1,4 +1,5 @@
 """Database access module"""
+import os
 import psycopg2
 import psycopg2.extras
 
@@ -6,7 +7,7 @@ from pydbwrapper.config import Config
 
 VERSION = "1.0.1"
 
-QUERIES_DIR = 'sql/'
+QUERIES_DIR = os.path.curdir + '/sql/'
 
 class DictWrapper(object):
     """Dict wrapper to access dict attributes with . operator"""
