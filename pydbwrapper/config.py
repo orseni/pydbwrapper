@@ -30,7 +30,7 @@ class Config(object):
             self.data = config_dict
         self.pool = psycopg2.pool.SimpleConnectionPool(50, 50, **self.data)
 
-    def getconn():
+    def getconn(self):
         return self.pool.getconn()
 
     @staticmethod
