@@ -7,7 +7,7 @@ from pydbwrapper.config import Config
 
 VERSION = "1.0.1"
 
-QUERIES_DIR = os.path.dirname(os.path.realpath(os.path.curdir)) + '/sql/'
+QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
 class DictWrapper(object):
     """Dict wrapper to access dict attributes with . operator"""
