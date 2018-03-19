@@ -2,6 +2,7 @@
 import os
 import psycopg2
 import psycopg2.extras
+import psycopg2.pool
 
 from pydbwrapper.config import Config
 
