@@ -66,7 +66,7 @@ class CursorWrapper(object):
         return DictWrapper(self.cursor.__next__())
 
 
-class UpdateBuilder(object):
+class SQLBuilder(object):
 
     def __init__(self, database, table, set_values={}, where_values={}):
         self.database = database
@@ -76,9 +76,9 @@ class UpdateBuilder(object):
         self.set_operators = {}
         self.where_operators = {}
         for key in set_values:
-            set_operators[key] = '='
+            self.set_operators[key] = '='
         for key in where_values:
-            where_operators[key] = '='
+            self.where_operators[key] = '='
 
 
     def set(self, field, value, operator='=', constant=False):
@@ -90,21 +90,35 @@ class UpdateBuilder(object):
         self.where_values[field] = value
         self.where_operators[field] = operator
         return self
-    
+
+    def sql(self):
+        pass
+
+    def parameters(self):
+        parameters = self.set_values.copy()
+        parameters.update(self.where_values)
+        return parameters
+
+    def execute(self):
+        return self.database.execute(self.sql(), self.parameters())
+
+
+class UpdateBuilder(SQLBuilder):
+
     def sql(self):
         formato = '{0} {1} %({0})s'
         set_str = ', '.join([formato.format(field, self.set_operators[field]) for field in self.set_values])
         where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
         return 'UPDATE {} SET {} WHERE {}'.format(self.table, set_str, where_str)
-    
-    def parameters(self):
-        parameters = self.set_values.copy()
-        parameters.update(self.where_values)
-        return parameters
-    
-    def execute(self):
-        return self.database.execute(self.sql(), self.parameters())
-        
+
+
+class InsertBuilder(SQLBuilder):
+
+    def sql(self):
+        cols_str = ', '.join(self.set_values.keys())
+        value_str = ', '.join([str(value) if type(value) != str else "'{}'".format(value) for value in self.set_values.values()])
+        return 'INSERT INTO {}({}) VALUES ({})'.format(self.table, cols_str, value_str)
+
 
 class Database(object):
     """Facade to access database using psycopg2"""
@@ -138,9 +152,12 @@ class Database(object):
             sql = name_or_sql
         cursor.execute(sql, parameters)
         return CursorWrapper(cursor)
-    
+
     def update(self, table):
         return UpdateBuilder(self, table)
+
+    def insert(self, table):
+        return InsertBuilder(self, table)
 
     def disconnect(self):
         """Disconnect from database"""

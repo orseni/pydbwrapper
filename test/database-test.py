@@ -1,38 +1,39 @@
-import inspect
 from pydbwrapper import database
 
-def test_database():
-    with database.Database() as db:
-        find_all_users(db)
-        find_user_by_id(db)
-        update_user(db)
-        find_all_users(db)
-        find_user_by_id_named_query(db)
+db = database.Database()
 
 
-def find_all_users(db):
-    print("test: {}".format(inspect.stack()[0][3]))
-    users = db.execute("select id, name from users")
-    for user in users:
-        print("{} - {}".format(user.id, user.name))
+def test_truncate_table():
+    db.execute("truncate table users")
 
 
-def find_user_by_id(db):
-    print("test: {}".format(inspect.stack()[0][3]))
+def test_insert_users():
+    db.insert("users").set("id", 1).set("name", "User 1").set("birth", "2018-03-20", constant=True).execute()
+    db.insert("users").set("id", 2).set("name", "User 2").set("birth", "2018-02-20", constant=True).execute()
+    db.insert("users").set("id", 3).set("name", "User 3").set("birth", "2018-01-20", constant=True).execute()
+
+
+def test_find_all_users():
+    users = db.execute("select id, name from users").fetchall()
+    assert len(users) == 3
+    assert users[0].id == 1
+    assert users[1].name == "User 2"
+
+
+def test_find_user_by_id():
     user_two = db.execute("select id, name from users where id = %(id)s", {"id":2}).fetchone()
-    print(user_two)
+    assert user_two.id == 2
+    assert user_two.name == "User 2"
 
 
-def update_user(db):
-    print("test: {}".format(inspect.stack()[0][3]))
-    db.update("users").set("name", "Usuario 3").where("id", 3).execute()
+def test_update_user():
+    try:
+        result = db.update("users").set("name", "Usuario 3").where("id", 3).execute()
+    except() as e:
+        assert e is None
 
 
-def find_user_by_id_named_query(db):
-    print("test: {}".format(inspect.stack()[0][3]))
+def test_find_user_by_id_named_query():
     user_three = db.execute("find-user-by-id", {"id":3}).fetchone()
-    print(user_three)
-
-
-if __name__ == "__main__":
-    test_database()    
+    assert user_three.id == 3
+    assert user_three.name == "Usuario 3"

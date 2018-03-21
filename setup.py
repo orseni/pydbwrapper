@@ -30,5 +30,5 @@ setup(
     long_description=long_description,
     license='BSD',
     keywords='psycopg2 postgresql sql database',
-    url='https://github.com/masroore/pg_simple',
+    url='https://github.com/orseni/pydbwrapper',
 )
