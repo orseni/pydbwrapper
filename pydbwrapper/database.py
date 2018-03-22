@@ -80,6 +80,10 @@ class SQLBuilder(object):
         for key in where_values:
             self.where_operators[key] = '='
 
+    def setall(self, data):
+        for value in data.keys():
+            self.set(value, data[value])
+        return self
 
     def set(self, field, value, operator='=', constant=False):
         self.set_values[field] = value

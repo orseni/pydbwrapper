@@ -8,9 +8,9 @@ def test_truncate_table():
 
 
 def test_insert_users():
-    db.insert("users").set("id", 1).set("name", "User 1").set("birth", "2018-03-20", constant=True).execute()
-    db.insert("users").set("id", 2).set("name", "User 2").set("birth", "2018-02-20", constant=True).execute()
-    db.insert("users").set("id", 3).set("name", "User 3").set("birth", "2018-01-20", constant=True).execute()
+    db.insert("users").set("id", 1).set("name", "User 1").set("birth", "2018-03-20").execute()
+    db.insert("users").set("id", 2).set("name", "User 2").set("birth", "2018-02-20").execute()
+    db.insert("users").setall({"id": 3,  "name": "User 3", "birth": "2018-01-20"}).execute()
 
 
 def test_find_all_users():
