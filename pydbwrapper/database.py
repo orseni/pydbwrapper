@@ -10,6 +10,7 @@ VERSION = "1.0.1"
 
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
+
 class DictWrapper(object):
     """Dict wrapper to access dict attributes with . operator"""
 
@@ -104,6 +105,7 @@ class SQLBuilder(object):
         return parameters
 
     def execute(self):
+        print("SQL: {} - PARAMS: {}".format(self.sql(), self.parameters()))
         return self.database.execute(self.sql(), self.parameters())
 
 
@@ -120,7 +122,7 @@ class InsertBuilder(SQLBuilder):
 
     def sql(self):
         cols_str = ', '.join(self.set_values.keys())
-        value_str = ', '.join([str(value) if type(value) != str else "'{}'".format(value) for value in self.set_values.values()])
+        value_str = ', '.join(["%({})s".format(field, self.set_operators[field]) for field in self.set_values])
         return 'INSERT INTO {}({}) VALUES ({})'.format(self.table, cols_str, value_str)
 
 
@@ -129,16 +131,15 @@ class Database(object):
 
     def __init__(self):
         self.config = Config.instance()
-        #self.connection = psycopg2.connect(**self.config.data)
-
-        self.connection = self.config.getconn()
+        self.connection = psycopg2.connect(**self.config.data)
+        # self.connection = self.config.getconn()
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, tb):
-        self.config.pool.putconn(self.connection)
-        # self.connection.close()
+        self.connection.close()
+        # self.config.pool.putconn(self.connection)
 
     def __load_query(self, name):
         """Load a query located in ./sql/<name>.sql"""
@@ -165,5 +166,5 @@ class Database(object):
 
     def disconnect(self):
         """Disconnect from database"""
-        self.config.pool.putconn(self.connection)
-        # self.connection.close()
+        self.connection.close()
+        # self.config.pool.putconn(self.connection)

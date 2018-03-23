@@ -14,7 +14,7 @@ class InvalidConfigurationError(Exception):
 class Config(object):
     """Configuration object"""
     __instance = None
-    pool = None
+    # pool = None
 
 
     def __init__(self, configuration_file=None, config_dict=None):
@@ -28,10 +28,10 @@ class Config(object):
                     raise InvalidConfigurationError(ex)
         elif config_dict:
             self.data = config_dict
-        self.pool = psycopg2.pool.ThreadedConnectionPool(10, 10, **self.data)
+        # self.pool = psycopg2.pool.ThreadedConnectionPool(10, 10, **self.data)
 
-    def getconn(self):
-        return self.pool.getconn()
+    # def getconn(self):
+        # return self.pool.getconn()
 
     @staticmethod
     def instance(configuration_file='/etc/pydbwrapper/config.json'):
