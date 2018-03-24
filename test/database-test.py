@@ -44,3 +44,14 @@ def test_find_user_by_id_named_query():
     user_three = db.execute("find-user-by-id", {"id":3}).fetchone()
     assert user_three.id == 3
     assert user_three.name == "Usuario 3"
+
+
+def test_delete_user_by_id():
+    db.delete("users").where("id", 3).execute()
+    assert len(db.execute("select id from users").fetchall()) == 2
+
+
+def test_delete_user_like_name():
+    db.delete("users").where("name", "Use%", "like").execute()
+    assert len(db.execute("select id from users").fetchall()) == 0
+

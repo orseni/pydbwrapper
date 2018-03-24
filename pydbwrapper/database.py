@@ -69,17 +69,13 @@ class CursorWrapper(object):
 
 class SQLBuilder(object):
 
-    def __init__(self, database, table, set_values={}, where_values={}):
+    def __init__(self, database, table):
         self.database = database
         self.table = table
-        self.set_values = set_values
-        self.where_values = where_values
+        self.set_values = {}
+        self.where_values = {}
         self.set_operators = {}
         self.where_operators = {}
-        for key in set_values:
-            self.set_operators[key] = '='
-        for key in where_values:
-            self.where_operators[key] = '='
 
     def setall(self, data):
         for value in data.keys():
@@ -118,12 +114,33 @@ class UpdateBuilder(SQLBuilder):
         return 'UPDATE {} SET {} WHERE {}'.format(self.table, set_str, where_str)
 
 
+class DeleteBuilder(SQLBuilder):
+
+    def sql(self):
+        formato = '{0} {1} %({0})s'
+        where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
+        return 'DELETE FROM {} WHERE {}'.format(self.table, where_str)
+
+
 class InsertBuilder(SQLBuilder):
 
     def sql(self):
         cols_str = ', '.join(self.set_values.keys())
         value_str = ', '.join(["%({})s".format(field, self.set_operators[field]) for field in self.set_values])
         return 'INSERT INTO {}({}) VALUES ({})'.format(self.table, cols_str, value_str)
+
+
+class Page(object):
+
+    def __init__(self):
+        self.page = 0
+        self.size = 0
+        self.data = []
+
+    def __init__(self, page, size, data):
+        self.page = page
+        self.size = size
+        self.data = data
 
 
 class Database(object):
@@ -164,6 +181,9 @@ class Database(object):
 
     def insert(self, table):
         return InsertBuilder(self, table)
+
+    def delete(self, table):
+        return DeleteBuilder(self, table)
 
     def disconnect(self):
         """Disconnect from database"""
