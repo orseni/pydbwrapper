@@ -11,7 +11,7 @@ VERSION = "1.0.1"
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
 
-class DictWrapper(object):
+class DictWrapper(dict):
     """Dict wrapper to access dict attributes with . operator"""
 
     def __init__(self, data):
