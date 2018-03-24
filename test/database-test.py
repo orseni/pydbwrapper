@@ -20,6 +20,13 @@ def test_find_all_users():
     assert users[1].name == "User 2"
 
 
+def test_find_two_users():
+    users = db.execute("select id, name from users").fetchmany(2)
+    assert len(users) == 2
+    assert users[0].id == 1
+    assert users[1].name == "User 2"
+
+
 def test_find_user_by_id():
     user_two = db.execute("select id, name from users where id = %(id)s", {"id":2}).fetchone()
     assert user_two.id == 2
