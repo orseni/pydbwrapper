@@ -132,6 +132,7 @@ class Database(object):
     def __init__(self):
         self.config = Config.instance()
         self.connection = psycopg2.connect(**self.config.data)
+        self.connection.autocommit = True
         # self.connection = self.config.getconn()
 
     def __enter__(self):
