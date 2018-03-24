@@ -92,6 +92,11 @@ class SQLBuilder(object):
         self.where_operators[field] = operator
         return self
 
+    def whereall(self, data):
+        for value in data.keys():
+            self.where(value, data[value])
+        return self
+
     def sql(self):
         pass
 

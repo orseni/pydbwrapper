@@ -35,7 +35,14 @@ def test_find_user_by_id():
 
 def test_update_user():
     try:
-        result = db.update("users").set("name", "Usuario 3").where("id", 3).execute()
+        db.update("users").set("name", "Usuario 3").where("id", 3).execute()
+    except() as e:
+        assert e is None
+
+
+def test_update_user_whereall():
+    try:
+        db.update("users").set("name", "Usuario 3").whereall({"id": 1, "name": "User1"}).execute()
     except() as e:
         assert e is None
 
