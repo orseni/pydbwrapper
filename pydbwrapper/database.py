@@ -127,7 +127,7 @@ class InsertBuilder(SQLBuilder):
 
 
 class Database(object):
-    """Facade to access database using psycopg2 """
+    """Facade to access database using psycopg2"""
 
     def __init__(self):
         self.config = Config.instance()
