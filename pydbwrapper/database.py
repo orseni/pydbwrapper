@@ -148,8 +148,8 @@ class InsertBuilder(SQLBuilder):
 
 class Page(dict):
 
-    def __init__(self, page, size, data):
-        self["page"] = page
+    def __init__(self, number, size, data):
+        self["number"] = number
         self["size"] = size
         self["data"] = data
 
