@@ -110,6 +110,15 @@ class SQLBuilder(object):
         return self.database.execute(self.sql(), self.parameters())
 
 
+class SelectBuilder(SQLBuilder):
+
+    def sql(self):
+        formato = '{0} {1} %({0})s'
+        set_str = ', '.join([formato.format(field, self.set_operators[field]) for field in self.set_values])
+        where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
+        return 'SELECT * FROM {} WHERE {}'.format(self.table, where_str)
+
+
 class UpdateBuilder(SQLBuilder):
 
     def sql(self):
@@ -180,6 +189,10 @@ class Database(object):
             sql = name_or_sql
         cursor.execute(sql, parameters)
         return CursorWrapper(cursor)
+
+
+    def select(self, table):
+        return SelectBuilder(self, table)
 
     def update(self, table):
         return UpdateBuilder(self, table)

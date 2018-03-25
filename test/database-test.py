@@ -40,6 +40,11 @@ def test_update_user():
         assert e is None
 
 
+def test_find_user_by_select():
+    users = db.select("users").where("name", "User%", "like").execute().fetchall()
+    assert len(users) == 2
+
+
 def test_update_user_whereall():
     try:
         db.update("users").set("name", "Usuario 3").whereall({"id": 1, "name": "User1"}).execute()
