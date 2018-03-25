@@ -162,7 +162,7 @@ class Database(object):
     def __init__(self):
         self.config = Config.instance()
         self.connection = self.config.pool.connection()
-        self.connection.autocommit = True
+        self.connection._con.autocommit = True
 
     def __enter__(self):
         return self
