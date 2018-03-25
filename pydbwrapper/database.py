@@ -35,6 +35,9 @@ class DictWrapper(dict):
     def __repr__(self):
         return self.__str__()
 
+    def _asdict(self):
+        return self.data
+
     def __iter__(self):
         return self.data.__iter__()
 
