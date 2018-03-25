@@ -146,17 +146,12 @@ class InsertBuilder(SQLBuilder):
         return 'INSERT INTO {}({}) VALUES ({})'.format(self.table, cols_str, value_str)
 
 
-class Page(object):
-
-    def __init__(self):
-        self.page = 0
-        self.size = 0
-        self.data = []
+class Page(dict):
 
     def __init__(self, page, size, data):
-        self.page = page
-        self.size = size
-        self.data = data
+        self["page"] = page
+        self["size"] = size
+        self["data"] = data
 
 
 class Database(object):
