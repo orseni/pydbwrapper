@@ -1,5 +1,8 @@
 from pydbwrapper import database
+from pydbwrapper import config
 
+
+config.Config.instance("config-test.json")
 db = database.Database()
 
 

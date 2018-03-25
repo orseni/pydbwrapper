@@ -1,17 +1,14 @@
 """Database access module"""
 import os
+
 import psycopg2
 import psycopg2.extras
-import psycopg2.pool
 
-from DBUtils.PooledDB import PooledDB
 from pydbwrapper.config import Config
 
 VERSION = "1.0.1"
 
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
-
-pool = PooledDB(psycopg2, 60, **Config.instance().data)
 
 class DictWrapper(dict):
     """Dict wrapper to access dict attributes with . operator"""
@@ -163,18 +160,15 @@ class Database(object):
     """Facade to access database using psycopg2"""
 
     def __init__(self):
-        # self.config = Config.instance()
-        # self.connection = psycopg2.connect(**self.config.data)
-        self.connection = pool.connection()
+        self.config = Config.instance()
+        self.connection = self.config.pool.connection()
         self.connection.autocommit = True
-        # self.connection = self.config.getconn()
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, tb):
         self.connection.close()
-        # self.config.pool.putconn(self.connection)
 
     def __load_query(self, name):
         """Load a query located in ./sql/<name>.sql"""
@@ -208,4 +202,3 @@ class Database(object):
     def disconnect(self):
         """Disconnect from database"""
         self.connection.close()
-        # self.config.pool.putconn(self.connection)

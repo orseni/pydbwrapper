@@ -1,7 +1,10 @@
 """PyDBWrapper Configuration"""
-import os
 import json
+import os
+
 import psycopg2
+from DBUtils.PooledDB import PooledDB
+
 
 class ConfigurationNotFoundError(Exception):
     """Configuration file was not found"""
@@ -14,8 +17,6 @@ class InvalidConfigurationError(Exception):
 class Config(object):
     """Configuration object"""
     __instance = None
-    # pool = None
-
 
     def __init__(self, configuration_file=None, config_dict=None):
         if configuration_file:
@@ -28,10 +29,9 @@ class Config(object):
                     raise InvalidConfigurationError(ex)
         elif config_dict:
             self.data = config_dict
-        # self.pool = psycopg2.pool.ThreadedConnectionPool(10, 10, **self.data)
 
-    # def getconn(self):
-        # return self.pool.getconn()
+        self.pool = PooledDB(psycopg2, **self.data)
+
 
     @staticmethod
     def instance(configuration_file='/etc/pydbwrapper/config.json'):
