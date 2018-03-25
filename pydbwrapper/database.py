@@ -11,7 +11,7 @@ VERSION = "1.0.1"
 
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
-pool = PooledDB(psycopg2, 50, **Config.instance().data)
+pool = PooledDB(psycopg2, 60, **Config.instance().data)
 
 class DictWrapper(dict):
     """Dict wrapper to access dict attributes with . operator"""
