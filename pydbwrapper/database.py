@@ -78,7 +78,6 @@ class SQLBuilder(object):
         self.where_values = {}
         self.set_operators = {}
         self.where_operators = {}
-        self.page_str = ""
 
     def setall(self, data):
         for value in data.keys():
@@ -115,11 +114,19 @@ class SQLBuilder(object):
 
 class SelectBuilder(SQLBuilder):
 
+    def __init__(self, database, table):
+        super(SelectBuilder, self).__init__(database, table)
+        self.fields = {}
+        self.page_str = ""
+
     def sql(self):
         formato = '{0} {1} %({0})s'
         set_str = ', '.join([formato.format(field, self.set_operators[field]) for field in self.set_values])
         where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
-        return 'SELECT * FROM {} WHERE {} {}'.format(self.table, where_str, self.page_str)
+        if where_str != '':
+            where_str = "WHERE {}".format(where_str)
+
+        return 'SELECT * FROM {} {} {}'.format(self.table, where_str, self.page_str)
 
     def paging(self, pagenumber, pagesize):
         self.page_str = "LIMIT {} OFFSET {}".format(pagesize, pagenumber)
