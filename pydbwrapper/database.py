@@ -129,7 +129,8 @@ class SelectBuilder(SQLBuilder):
         return 'SELECT * FROM {} {} {}'.format(self.table, where_str, self.page_str)
 
     def paging(self, pagenumber, pagesize):
-        self.page_str = "LIMIT {} OFFSET {}".format(pagesize, pagenumber)
+        if pagesize is not None and pagenumber is not None:
+            self.page_str = "LIMIT {} OFFSET {}".format(pagesize, pagenumber)
         data = self.execute().fetchall()
         return Page(pagenumber, pagesize, data)
 
