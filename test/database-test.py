@@ -55,6 +55,13 @@ def test_find_user_by_select():
         assert len(users) == 2
 
 
+def test_paging_user_by_select():
+    with database.Database() as db:
+        page = db.select("users").where("id", "10", "<").paging(1, 2)
+        assert type(page) == database.Page
+        assert len(page.data) == 2
+
+
 def test_update_user_whereall():
     with database.Database() as db:
         try:

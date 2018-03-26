@@ -78,6 +78,7 @@ class SQLBuilder(object):
         self.where_values = {}
         self.set_operators = {}
         self.where_operators = {}
+        self.page_str = ""
 
     def setall(self, data):
         for value in data.keys():
@@ -118,7 +119,12 @@ class SelectBuilder(SQLBuilder):
         formato = '{0} {1} %({0})s'
         set_str = ', '.join([formato.format(field, self.set_operators[field]) for field in self.set_values])
         where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
-        return 'SELECT * FROM {} WHERE {}'.format(self.table, where_str)
+        return 'SELECT * FROM {} WHERE {} {}'.format(self.table, where_str, self.page_str)
+
+    def paging(self, pagenumber, pagesize):
+        self.page_str = "LIMIT {} OFFSET {}".format(pagesize, pagenumber)
+        data = self.execute().fetchall()
+        return Page(pagenumber, pagesize, data)
 
 
 class UpdateBuilder(SQLBuilder):
@@ -149,9 +155,9 @@ class InsertBuilder(SQLBuilder):
 class Page(dict):
 
     def __init__(self, number, size, data):
-        self["number"] = number
-        self["size"] = size
-        self["data"] = data
+        self["number"] = self.number = number
+        self["size"] = self.size = size
+        self["data"] = self.data = data
 
 
 class Database(object):
