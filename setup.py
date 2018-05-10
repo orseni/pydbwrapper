@@ -14,7 +14,7 @@ setup(
     name="pydbwrapper",
     version=database.VERSION,
     packages=find_packages(),
-    install_requires=['psycopg2'],
+    install_requires=['psycopg2', 'DBUtils'],
     classifiers=['Topic :: Database',
                  'Programming Language :: Python',
                  'Programming Language :: Python :: 2',
