@@ -2,8 +2,6 @@ import os
 
 from setuptools import setup, find_packages
 
-from pydbwrapper import database
-
 try:
     with open(os.path.abspath('./README.md')) as stream:
         long_description = stream.read()
@@ -12,7 +10,7 @@ except:
 
 setup(
     name="pydbwrapper",
-    version=database.VERSION,
+    version='1.0.2',
     packages=find_packages(),
     install_requires=['psycopg2', 'DBUtils'],
     classifiers=['Topic :: Database',

@@ -6,7 +6,7 @@ import psycopg2.extras
 
 from pydbwrapper.config import Config
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
