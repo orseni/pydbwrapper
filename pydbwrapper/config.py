@@ -34,8 +34,8 @@ class Config(object):
 
 
     @staticmethod
-    def instance(configuration_file='/etc/pydbwrapper/config.json'):
+    def instance(configuration_file='/etc/pydbwrapper/config.json', config_dict=None):
         """Get singleton instance of Configuration"""
         if Config.__instance is None:
-            Config.__instance = Config(configuration_file)
+            Config.__instance = Config(configuration_file, config_dict)
         return Config.__instance

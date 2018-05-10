@@ -6,8 +6,6 @@ import psycopg2.extras
 
 from pydbwrapper.config import Config
 
-VERSION = "1.0.2"
-
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
 class DictWrapper(dict):
@@ -171,8 +169,8 @@ class Page(dict):
 class Database(object):
     """Facade to access database using psycopg2"""
 
-    def __init__(self):
-        self.config = Config.instance()
+    def __init__(self, config=None):
+        self.config = Config.instance() if config is None else config
         self.connection = self.config.pool.connection()
 
     def __enter__(self):
