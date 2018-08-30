@@ -3,6 +3,7 @@ import os
 
 import psycopg2
 import psycopg2.extras
+import errno
 
 from pydbwrapper.config import Config
 
@@ -93,7 +94,6 @@ class SQLBuilder(object):
         return parameters
 
     def execute(self):
-        print("SQL: {} - PARAMS: {}".format(self.sql(), self.parameters()))
         return self.database.execute(self.sql(), self.parameters())
 
 
@@ -158,6 +158,7 @@ class Database(object):
     def __init__(self, config=None):
         self.config = Config.instance() if config is None else config
         self.connection = self.config.pool.connection()
+        self.print_sql = self.config.print_sql
 
     def __enter__(self):
         return self
@@ -178,8 +179,15 @@ class Database(object):
             cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             sql = self.__load_query(name_or_sql)
-        except FileNotFoundError:
-            sql = name_or_sql
+        except IOError as e:
+            if e.errno == errno.ENOENT:
+                sql = name_or_sql
+            else:
+                raise e
+        
+        if self.print_sql:
+            print("SQL: {} - PARAMS: {}".format(sql, parameters))
+        
         cursor.execute(sql, parameters)
         return CursorWrapper(cursor)
 

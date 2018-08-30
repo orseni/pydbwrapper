@@ -10,9 +10,9 @@ except:
 
 setup(
     name="pydbwrapper",
-    version='1.0.4',
+    version='1.0.5',
     packages=find_packages(),
-    install_requires=['psycopg2', 'DBUtils'],
+    install_requires=['psycopg2-binary', 'DBUtils'],
     classifiers=['Topic :: Database',
                  'Programming Language :: Python',
                  'Programming Language :: Python :: 2',

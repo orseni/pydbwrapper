@@ -30,8 +30,9 @@ class Config(object):
         elif config_dict:
             self.data = config_dict
 
+        self.print_sql = self.data.pop('print_sql') if 'print_sql' in self.data else False 
+        
         self.pool = PooledDB(psycopg2, **self.data)
-
 
     @staticmethod
     def instance(configuration_file='/etc/pydbwrapper/config.json', config_dict=None):
