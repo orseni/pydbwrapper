@@ -12,33 +12,20 @@ class DictWrapper(dict):
     """Dict wrapper to access dict attributes with . operator"""
 
     def __init__(self, data):
-        self.data = data
+        self.update(data)
 
     def __getattr__(self, name):
-        if name in self.data:
-            if isinstance(self.data[name], dict):
-                return DictWrapper(data=self.data[name])
-            return self.data[name]
+        if name in self:
+            if isinstance(self[name], dict) and not isinstance(self[name], DictWrapper):
+                self[name] = DictWrapper(self[name])
+            return self[name]
         raise AttributeError('{} is not a valid attribute'.format(name))
 
     def __setattr__(self, name, value):
-        if name == 'data':
-            super.__setattr__(self, name, value)
-        else:
-            self.data[name] = value
-
-    def __str__(self):
-        return str(self.data)
-
-    def __repr__(self):
-        return self.__str__()
+        self[name] = value
 
     def _asdict(self):
-        return self.data
-
-    def __iter__(self):
-        return self.data.__iter__()
-
+        return self
 
 class CursorWrapper(object):
 
@@ -119,7 +106,6 @@ class SelectBuilder(SQLBuilder):
 
     def sql(self):
         formato = '{0} {1} %({0})s'
-        set_str = ', '.join([formato.format(field, self.set_operators[field]) for field in self.set_values])
         where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
         if where_str != '':
             where_str = "WHERE {}".format(where_str)
