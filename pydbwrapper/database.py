@@ -9,6 +9,7 @@ from pydbwrapper.config import Config
 
 QUERIES_DIR = os.path.realpath(os.path.curdir) + '/sql/'
 
+
 class DictWrapper(dict):
     """Dict wrapper to access dict attributes with . operator"""
 
@@ -28,6 +29,7 @@ class DictWrapper(dict):
     def _asdict(self):
         return self
 
+
 class CursorWrapper(object):
 
     def __init__(self, cursor):
@@ -37,6 +39,8 @@ class CursorWrapper(object):
         row = self.cursor.fetchone()
         if row is not None:
             return DictWrapper(row)
+        else:
+            self.close()
         return row
 
     def fetchmany(self, size):
@@ -48,11 +52,14 @@ class CursorWrapper(object):
     def close(self):
         self.cursor.close()
 
+    def next(self):
+        row = self.fetchone()
+        if row is None:
+            raise StopIteration()
+        return row
+
     def __iter__(self):
         return self
-
-    def __next__(self):
-        return DictWrapper(self.cursor.__next__())
 
 
 class SQLBuilder(object):
@@ -60,24 +67,17 @@ class SQLBuilder(object):
     def __init__(self, database, table):
         self.database = database
         self.table = table
-        self.set_values = {}
-        self.where_values = {}
-        self.set_operators = {}
-        self.where_operators = {}
-
-    def setall(self, data):
-        for value in data.keys():
-            self.set(value, data[value])
-        return self
-
-    def set(self, field, value, operator='=', constant=False):
-        self.set_values[field] = value
-        self.set_operators[field] = operator
-        return self
+        self.where_conditions = []
+        self.parameters = {}
 
     def where(self, field, value, operator='=', constant=False):
-        self.where_values[field] = value
-        self.where_operators[field] = operator
+        if constant:
+            self.where_conditions.append(
+                '{} {} {}'.format(field, operator, value))
+        else:
+            self.where_conditions.append(
+                '{0} {1} %({0})s'.format(field, operator))
+            self.parameters[field] = value
         return self
 
     def whereall(self, data):
@@ -88,68 +88,139 @@ class SQLBuilder(object):
     def sql(self):
         pass
 
-    def parameters(self):
-        parameters = self.set_values.copy()
-        parameters.update(self.where_values)
-        return parameters
+    def build_where(self):
+        if len(self.where_conditions) > 0:
+            conditions = ' AND '.join(self.where_conditions)
+            return 'WHERE {}'.format(conditions)
+        else:
+            return ''
 
     def execute(self):
-        return self.database.execute(self.sql(), self.parameters())
+        return self.database.execute(self.sql(), self.parameters)
 
 
 class SelectBuilder(SQLBuilder):
 
     def __init__(self, database, table):
         super(SelectBuilder, self).__init__(database, table)
-        self.fields = {}
-        self.page_str = ""
+        self.fields_to_select = ['*']
+        self.page_str = ''
+        self.order_by_fields = []
+        self.group_by_fields = []
+
+    def fields(self, *fields):
+        self.fields_to_select = fields
+        return self
+
+    def order_by(self, *fields):
+        self.order_by_fields = fields
+        return self
+
+    def group_by(self, *fields):
+        self.group_by_fields = fields
+        return self
 
     def sql(self):
-        formato = '{0} {1} %({0})s'
-        where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
-        if where_str != '':
-            where_str = "WHERE {}".format(where_str)
+        order_by_str = ', '.join(self.order_by_fields)
+        if order_by_str != '':
+            order_by_str = 'ORDER BY {}'.format(order_by_str)
 
-        return 'SELECT * FROM {} {} {}'.format(self.table, where_str, self.page_str)
+        group_by_str = ', '.join(self.group_by_fields)
+        if group_by_str != '':
+            group_by_str = 'GROUP BY {}'.format(group_by_str)
 
-    def paging(self, pagenumber, pagesize):
-        if pagesize is not None and pagenumber is not None:
-            self.page_str = "LIMIT {} OFFSET {}".format(pagesize, pagenumber)
+        return 'SELECT {} FROM {} {} {} {} {}'.format(
+            ', '.join(self.fields_to_select),
+            self.table,
+            self.build_where(),
+            group_by_str,
+            order_by_str,
+            self.page_str)
+
+    def paging(self, page=0, page_size=10):
+        self.page_str = "LIMIT {} OFFSET {}".format(
+            page_size + 1, page * page_size)
         data = self.execute().fetchall()
-        return Page(pagenumber, pagesize, data)
+        last_page = len(data) <= page_size
+        return Page(page, page_size, data[:-1] if not last_page else data, last_page)
 
 
 class UpdateBuilder(SQLBuilder):
 
+    def __init__(self, database, table):
+        super(UpdateBuilder, self).__init__(database, table)
+        self.set_statements = []
+
     def sql(self):
-        formato = '{0} {1} %({0})s'
-        set_str = ', '.join([formato.format(field, self.set_operators[field]) for field in self.set_values])
-        where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
-        return 'UPDATE {} SET {} WHERE {}'.format(self.table, set_str, where_str)
+        return 'UPDATE {} {} {}'.format(self.table, self.build_set(), self.build_where())
+
+    def build_set(self):
+        if len(self.set_statements) > 0:
+            statements = ', '.join(self.set_statements)
+            return 'SET {}'.format(statements)
+        else:
+            return ''
+
+    def setall(self, data):
+        for value in data.keys():
+            self.set(value, data[value])
+        return self
+
+    def set(self, field, value, constant=False):
+        if constant:
+            self.set_statements.append('{} = {}'.format(field, value))
+        else:
+            self.set_statements.append('{0} = %({0})s'.format(field))
+            self.parameters[field] = value
+        return self
 
 
 class DeleteBuilder(SQLBuilder):
 
     def sql(self):
-        formato = '{0} {1} %({0})s'
-        where_str = ' AND '.join([formato.format(field, self.where_operators[field]) for field in self.where_values])
-        return 'DELETE FROM {} WHERE {}'.format(self.table, where_str)
+        return 'DELETE FROM {} {}'.format(self.table, self.build_where())
 
 
 class InsertBuilder(SQLBuilder):
 
+    def __init__(self, database, table):
+        super(InsertBuilder, self).__init__(database, table)
+        self.constants = {}
+
     def sql(self):
-        cols_str = ', '.join(self.set_values.keys())
-        value_str = ', '.join(["%({})s".format(field, self.set_operators[field]) for field in self.set_values])
-        return 'INSERT INTO {}({}) VALUES ({})'.format(self.table, cols_str, value_str)
+        if len(set(self.parameters.keys() + self.constants.keys())) == len(self.parameters.keys()) + len(self.constants.keys()):
+            cols = []
+            values = []
+            for field in self.parameters:
+                cols.append(field)
+                values.append('%({})s'.format(field))
+            for field in self.constants:
+                cols.append(field)
+                values.append(self.constants[field])
+            return 'INSERT INTO {}({}) VALUES ({})'.format(self.table, ', '.join(cols), ', '.join(values))
+        else:
+            raise ValueError('There are repeated keys in constants and values')
+
+    def setall(self, data):
+        for value in data.keys():
+            self.set(value, data[value])
+        return self
+        
+    def set(self, field, value, constant=False):
+        if constant:
+            self.constants[field] = value
+        else:
+            self.parameters[field] = value
+        return self
 
 
 class Page(dict):
 
-    def __init__(self, number, size, data):
+    def __init__(self, number, size, data, last_page):
         self["number"] = self.number = number
         self["size"] = self.size = size
         self["data"] = self.data = data
+        self["last_page"] = self.last_page = last_page
 
 
 class Database(object):
@@ -165,31 +236,40 @@ class Database(object):
 
     def __exit__(self, type, value, tb):
         self.connection.commit()
-        self.connection.close()
+        self.disconnect()
 
     def __load_query(self, name):
         """Load a query located in ./sql/<name>.sql"""
-        with open(QUERIES_DIR + name + '.sql') as query:
-            query_string = query.read()
-        return query_string
+        try:
+            with open(QUERIES_DIR + name + '.sql') as query:
+                query_string = query.read()
+            return query_string
+        except IOError as e:
+            if e.errno == errno.ENOENT:
+                return name
+            else:
+                raise e
 
-    def execute(self, name_or_sql, parameters=None):
+    def execute(self, name_or_sql, parameters=None, skip_load_query=False):
         """Execute query by name returning cursor"""
         cursor = self.connection.cursor(
             cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
+        if skip_load_query:
+            sql = name_or_sql
+        else:
             sql = self.__load_query(name_or_sql)
-        except IOError as e:
-            if e.errno == errno.ENOENT:
-                sql = name_or_sql
-            else:
-                raise e
-        
         if self.print_sql:
             print("SQL: {} - PARAMS: {}".format(sql, parameters))
-        
+
         cursor.execute(sql, parameters)
         return CursorWrapper(cursor)
+
+    def paging(self, name_or_sql, parameters=None, page=0, page_size=10):
+        sql = '{} LIMIT {} OFFSET {}'.format(self.__load_query(
+            name_or_sql), page_size + 1, page * page_size)
+        data = self.execute(sql, parameters, skip_load_query=True).fetchall()
+        last_page = len(data) <= page_size
+        return Page(page, page_size, data[:-1] if not last_page else data, last_page)
 
     def select(self, table):
         return SelectBuilder(self, table)
