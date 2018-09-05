@@ -177,3 +177,19 @@ def test_select_without_result():
     with database.Database() as db:
         u = db.select('users').where('1', '0', constant=True).execute().fetchone()
         assert u is None
+
+
+def test_rollback_with():
+    try:
+        with database.Database() as db:
+            db.insert("users") \
+                .set("id", 11) \
+                .set("name", "User 11") \
+                .set("birth", "2018-03-20") \
+                .set("gender", "M") \
+                .execute()
+            raise Exception()
+    except:
+        with database.Database() as db:
+            assert db.select('users').where('id', 11).execute().fetchone() is None
+        

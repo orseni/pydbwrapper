@@ -238,7 +238,10 @@ class Database(object):
         return self
 
     def __exit__(self, type, value, tb):
-        self.connection.commit()
+        if type is None and value is None and tb is None:
+            self.connection.commit()
+        else:
+            self.connection.rollback()
         self.disconnect()
 
     def __load_query(self, name):
