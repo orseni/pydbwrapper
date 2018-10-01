@@ -99,7 +99,7 @@ class SQLBuilder(object):
             return ''
 
     def execute(self):
-        return self.database.execute(self.sql(), self.parameters)
+        return self.database.execute(self.sql(), self.parameters, True)
 
 
 class SelectBuilder(SQLBuilder):
