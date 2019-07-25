@@ -52,6 +52,9 @@ class CursorWrapper(object):
     def close(self):
         self.cursor.close()
 
+    def rowcount(self):
+        return self.cursor.rowcount
+
     def next(self):
         row = self.fetchone()
         if row is None:
