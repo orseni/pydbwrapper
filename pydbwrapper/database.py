@@ -60,7 +60,7 @@ class CursorWrapper(object):
         if row is None:
             raise StopIteration()
         return row
-    
+
     def __next__(self):
         return self.next()
 
@@ -195,8 +195,8 @@ class InsertBuilder(SQLBuilder):
 
     def sql(self):
         if len(set(list(self.parameters.keys()) + list(self.constants.keys()))) == len(self.parameters.keys()) + len(self.constants.keys()):
-            cols=[]
-            values=[]
+            cols = []
+            values = []
             for field in self.parameters:
                 cols.append(field)
                 values.append('%({})s'.format(field))
@@ -214,28 +214,28 @@ class InsertBuilder(SQLBuilder):
 
     def set(self, field, value, constant=False):
         if constant:
-            self.constants[field]=value
+            self.constants[field] = value
         else:
-            self.parameters[field]=value
+            self.parameters[field] = value
         return self
 
 
 class Page(dict):
 
     def __init__(self, number, size, data, last_page):
-        self["number"]=self.number=number
-        self["size"]=self.size=size
-        self["data"]=self.data=data
-        self["last_page"]=self.last_page=last_page
+        self["number"] = self.number = number
+        self["size"] = self.size = size
+        self["data"] = self.data = data
+        self["last_page"] = self.last_page = last_page
 
 
 class Database(object):
     """Facade to access database using psycopg2"""
 
     def __init__(self, config=None):
-        self.config=Config.instance() if config is None else config
-        self.connection=self.config.pool.connection()
-        self.print_sql=self.config.print_sql
+        self.config = Config.instance() if config is None else config
+        self.connection = self.config.pool.connection()
+        self.print_sql = self.config.print_sql
 
     def __enter__(self):
         return self
@@ -251,7 +251,7 @@ class Database(object):
         """Load a query located in ./sql/<name>.sql"""
         try:
             with open(QUERIES_DIR + name + '.sql') as query:
-                query_string=query.read()
+                query_string = query.read()
             return query_string
         except IOError as e:
             if e.errno == errno.ENOENT:
@@ -261,23 +261,27 @@ class Database(object):
 
     def execute(self, name_or_sql, parameters=None, skip_load_query=False):
         """Execute query by name returning cursor"""
-        cursor=self.connection.cursor(
+        cursor = self.connection.cursor(
             cursor_factory=psycopg2.extras.RealDictCursor)
         if skip_load_query:
-            sql=name_or_sql
+            sql = name_or_sql
         else:
-            sql=self.__load_query(name_or_sql)
+            sql = self.__load_query(name_or_sql)
         if self.print_sql:
             print("SQL: {} - PARAMS: {}".format(sql, parameters))
 
         cursor.execute(sql, parameters)
         return CursorWrapper(cursor)
 
-    def paging(self, name_or_sql, parameters=None, page=0, page_size=10):
-        sql='{} LIMIT {} OFFSET {}'.format(self.__load_query(
-            name_or_sql), page_size + 1, page * page_size)
-        data=self.execute(sql, parameters, skip_load_query=True).fetchall()
-        last_page=len(data) <= page_size
+    def paging(self, name_or_sql, parameters=None, page=0, page_size=10, skip_load_query=True):
+        if skip_load_query:
+            sql = name_or_sql
+        else:
+            sql = self.__load_query(name_or_sql)
+        sql = '{} LIMIT {} OFFSET {}'.format(
+            sql, page_size + 1, page * page_size)
+        data = self.execute(sql, parameters, skip_load_query=True).fetchall()
+        last_page = len(data) <= page_size
         return Page(page, page_size, data[:-1] if not last_page else data, last_page)
 
     def select(self, table):
